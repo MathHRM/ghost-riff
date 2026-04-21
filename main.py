@@ -2,6 +2,9 @@ import cv2
 import mediapipe as mp
 import pickle
 import numpy as np
+import time
+import pygame
+from mutagen.mp3 import MP3
 
 ESC_KEY_ASCII_CODE = 27
 
@@ -21,6 +24,9 @@ cap = cv2.VideoCapture(0)
 
 model_chord = pickle.load(open("model_chord.pickle", "rb"))["model"]
 model_stroke = pickle.load(open("model_stroke.pickle", "rb"))["model"]
+
+pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
+pygame.mixer.init()
 
 # keys must match class indices used during data collection
 chord_labels = chord_labels = {
@@ -57,6 +63,19 @@ chord_labels = chord_labels = {
         "audio": "sounds/chords/Em.mp3"
     },
 }
+chord_sounds = {}
+for _idx, _info in chord_labels.items():
+    _path = _info.get("audio")
+    if _path is None:
+        continue
+    try:
+        chord_sounds[_info["name"]] = {"path": _path, "duration": MP3(_path).info.length}
+    except Exception:
+        pass
+
+last_chord_name = None
+last_play_time = None
+
 stroke_labels = stroke_labels = {
     0: {
         "name": "Idle", # 🫳 mão relaxada semi-aberta (estado neutro)
@@ -80,6 +99,23 @@ FINGER_COLORS = [
     (HandLandmarksConnections.HAND_RING_FINGER_CONNECTIONS,   (0, 0, 255)),      # red
     (HandLandmarksConnections.HAND_PINKY_FINGER_CONNECTIONS,  (255, 0, 255)),    # magenta
 ]
+
+def try_play_chord(chord_name):
+    global last_chord_name, last_play_time
+    if chord_name not in chord_sounds:
+        return
+    if chord_name == last_chord_name:
+        if last_play_time is not None:
+            elapsed = time.monotonic() - last_play_time
+            if elapsed < chord_sounds[chord_name]["duration"] * 0.5:
+                return
+    try:
+        pygame.mixer.music.load(chord_sounds[chord_name]["path"])
+        pygame.mixer.music.play()
+        last_chord_name = chord_name
+        last_play_time = time.monotonic()
+    except Exception:
+        pass
 
 def draw_connections(frame, hand_landmarks):
     height, width, _ = frame.shape
@@ -122,6 +158,9 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
                 label = label_prediction_by_side(side, model_stroke, coords)
 
+                if side == "Right":
+                    try_play_chord(label["name"])
+
                 wrist = hand[0]
                 cx, cy = int(wrist.x * w), int(wrist.y * h)
                 cv2.putText(frame, label["name"], (cx, cy - 20),
@@ -134,3 +173,4 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
 cap.release()
 cv2.destroyAllWindows()
+pygame.mixer.quit()
