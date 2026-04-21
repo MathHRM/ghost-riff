@@ -5,7 +5,7 @@ import glob
 import argparse
 
 ESC_KEY = 27
-COLLECT_DURATION = 5.0
+COLLECT_DURATION = 10.0
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--hand", choices=["chord", "stroke"], required=True)
