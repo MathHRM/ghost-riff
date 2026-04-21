@@ -19,9 +19,9 @@ data = []
 labels = []
 
 with HandLandmarker.create_from_options(options) as landmarker:
-    for session_dir in sorted(glob.glob("data/session_*/")):
-        label = os.path.basename(os.path.normpath(session_dir))
-        image_paths = sorted(glob.glob(os.path.join(session_dir, "*.jpg")))
+    for class_dir in sorted(glob.glob("data/*/"), key=lambda p: int(os.path.basename(os.path.normpath(p)))):
+        label = int(os.path.basename(os.path.normpath(class_dir)))
+        image_paths = sorted(glob.glob(os.path.join(class_dir, "*.jpg")))
 
         for img_path in image_paths:
             bgr = cv2.imread(img_path)
@@ -44,7 +44,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
             data.append(coords)
             labels.append(label)
 
-        print(f"{label}: {sum(1 for l in labels if l == label)} samples")
+        print(f"class {label}: {sum(1 for l in labels if l == label)} samples")
 
 with open("dataset.pickle", "wb") as f:
     pickle.dump({"data": data, "labels": labels}, f)
