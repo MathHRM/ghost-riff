@@ -1,6 +1,8 @@
 import cv2
 import mediapipe as mp
 
+ESC_KEY_ASCII_CODE = 27
+
 BaseOptions = mp.tasks.BaseOptions
 HandLandmarker = mp.tasks.vision.HandLandmarker
 HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
@@ -26,18 +28,18 @@ with HandLandmarker.create_from_options(options) as landmarker:
         # mediapipe image
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
 
-        result = landmarker.detect_for_video(mp_image, int(cap.get(cv2.CAP_PROP_POS_MSEC)))
+        detected_hand_data = landmarker.detect_for_video(mp_image, int(cap.get(cv2.CAP_PROP_POS_MSEC)))
 
-        if result.hand_landmarks:
-            for hand in result.hand_landmarks:
-                for lm in hand:
-                    h, w, _ = frame.shape
-                    cx, cy = int(lm.x * w), int(lm.y * h)
+        if detected_hand_data.hand_landmarks:
+            for hand in detected_hand_data.hand_landmarks:
+                for landmark in hand:
+                    height, width, _ = frame.shape # mediapipe positions come in %, so we need to convert to pixels
+                    cx, cy = int(landmark.x * width), int(landmark.y * height)
                     cv2.circle(frame, (cx, cy), 5, (0, 255, 0), -1)
 
         cv2.imshow("Hand Tracker (NEW API)", frame)
 
-        if cv2.waitKey(1) & 0xFF == 27:
+        if cv2.waitKey(1) & 0xFF == ESC_KEY_ASCII_CODE: # waitKey returns 32 bit int, so we need to do a bitwise AND with 0xFF to get the last 8 bits which represent the ASCII code of the key pressed
             break
 
 cap.release()
