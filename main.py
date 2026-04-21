@@ -1,5 +1,7 @@
 import cv2
 import mediapipe as mp
+import pickle
+import numpy as np
 
 ESC_KEY_ASCII_CODE = 27
 
@@ -16,6 +18,10 @@ options = HandLandmarkerOptions(
 )
 
 cap = cv2.VideoCapture(0)
+
+model_dict = pickle.load(open('./model.pickle', 'rb'))
+model = model_dict['model']
+labels_dict = {0: 'Joia', 1: 'Paz', 2: 'De boa'}
 
 FINGER_COLORS = [
     (HandLandmarksConnections.HAND_PALM_CONNECTIONS,         (255, 255, 255)),  # white
@@ -52,8 +58,22 @@ with HandLandmarker.create_from_options(options) as landmarker:
         detected_hand_data = landmarker.detect_for_video(mp_image, int(cap.get(cv2.CAP_PROP_POS_MSEC)))
 
         if detected_hand_data.hand_landmarks:
+            h, w, _ = frame.shape
             for hand in detected_hand_data.hand_landmarks:
                 draw_connections(frame, hand)
+
+                coords = []
+                for landmark in hand:
+                    coords.append(landmark.x)
+                    coords.append(landmark.y)
+
+                prediction = model.predict([np.asarray(coords)])
+                predicted_label = labels_dict[int(prediction[0])]
+
+                wrist = hand[0]
+                cx, cy = int(wrist.x * w), int(wrist.y * h)
+                cv2.putText(frame, predicted_label, (cx, cy - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
 
         cv2.imshow("Hand Tracker (NEW API)", frame)
 
