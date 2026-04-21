@@ -30,31 +30,31 @@ chord_labels = chord_labels = {
     },
     1: {
         "name": "C", # ☝️ 1 dedo (indicador levantado)
-        "audio": "sounds/chords/C.wav"
+        "audio": "sounds/chords/C.mp3"
     },
     2: {
         "name": "G", # ✌️ 2 dedos (indicador + médio)
-        "audio": "sounds/chords/G.wav"
+        "audio": "sounds/chords/G.mp3"
     },
     3: {
         "name": "D", # 🤟 3 dedos
-        "audio": "sounds/chords/D.wav"
+        "audio": "sounds/chords/D.mp3"
     },
     4: {
         "name": "A", # 🖐️ mão aberta
-        "audio": "sounds/chords/A.wav"
+        "audio": "sounds/chords/A.mp3"
     },
     5: {
         "name": "E", # ✊ punho fechado
-        "audio": "sounds/chords/E.wav"
+        "audio": "sounds/chords/E.mp3"
     },
     6: {
         "name": "Am", # 👍 joinha
-        "audio": "sounds/chords/Am.wav"
+        "audio": "sounds/chords/Am.mp3"
     },
     7: {
         "name": "Em", # 🤘 rock
-        "audio": "sounds/chords/Em.wav"
+        "audio": "sounds/chords/Em.mp3"
     },
 }
 stroke_labels = stroke_labels = {
