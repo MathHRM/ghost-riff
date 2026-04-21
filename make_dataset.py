@@ -19,7 +19,7 @@ data = []
 labels = []
 
 with HandLandmarker.create_from_options(options) as landmarker:
-    for class_dir in sorted(glob.glob("data/*/"), key=lambda p: int(os.path.basename(os.path.normpath(p)))):
+    for class_dir in glob.glob("data/*/"):
         label = int(os.path.basename(os.path.normpath(class_dir)))
         image_paths = sorted(glob.glob(os.path.join(class_dir, "*.jpg")))
 
