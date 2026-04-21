@@ -121,7 +121,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
                 wrist = hand[0]
                 cx, cy = int(wrist.x * w), int(wrist.y * h)
-                cv2.putText(frame, label, (cx, cy - 10),
+                cv2.putText(frame, label["name"], (cx, cy - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
 
         cv2.imshow("Ghost Riff", frame)
