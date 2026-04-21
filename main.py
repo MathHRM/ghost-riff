@@ -23,6 +23,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
             break
 
         # converte para RGB
+        frame = cv2.flip(frame, 1) # flip horizontalmente para ficar como um espelho
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         # mediapipe image
