@@ -91,6 +91,12 @@ def draw_connections(frame, hand_landmarks):
             ex, ey = int(end.x * width), int(end.y * height)
             cv2.line(frame, (sx, sy), (ex, ey), color, 2)
 
+def label_prediction_by_side(side, model_stroke, coords):
+    if side == "Right":
+        return chord_labels[int(model_chord.predict([coords])[0])]
+
+    return stroke_labels[int(model_stroke.predict([coords])[0])]
+
 with HandLandmarker.create_from_options(options) as landmarker:
     while cap.isOpened():
         ret, frame = cap.read()
@@ -114,14 +120,11 @@ with HandLandmarker.create_from_options(options) as landmarker:
                 coords = [v for lm in hand for v in (lm.x, lm.y)]
                 side = detected_hand_data.handedness[i][0].category_name
 
-                if side == "Right":
-                    label = chord_labels[int(model_chord.predict([coords])[0])]
-                else:
-                    label = stroke_labels[int(model_stroke.predict([coords])[0])]
+                label = label_prediction_by_side(side, model_stroke, coords)
 
                 wrist = hand[0]
                 cx, cy = int(wrist.x * w), int(wrist.y * h)
-                cv2.putText(frame, label["name"], (cx, cy - 10),
+                cv2.putText(frame, label["name"], (cx, cy - 20),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
 
         cv2.imshow("Ghost Riff", frame)
