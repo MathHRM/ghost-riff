@@ -9,23 +9,63 @@ source venv/bin/activate
 python main.py
 ```
 
-Requires webcam. Press ESC to quit.
+Requires webcam and both `model_chord.pickle` + `model_stroke.pickle`. Press ESC to quit.
 
 ## Stack
 
 - **MediaPipe** (Tasks API, `VisionRunningMode.VIDEO`) — hand landmark detection via `hand_landmarker.task` model file
 - **OpenCV** — webcam capture, frame display, drawing
+- **scikit-learn** — RandomForestClassifier for gesture classification
 
 ## Architecture
 
-Single-file app (`main.py`). Pipeline:
+Dual-model gesture recognition pipeline. `main.py` is the entry point.
 
-1. OpenCV captures frame from webcam
-2. Frame flipped horizontally (mirror effect), converted BGR→RGB
-3. Wrapped in `mp.Image`, fed to `HandLandmarker.detect_for_video` with timestamp from `CAP_PROP_POS_MSEC`
-4. Detected landmarks connected as green skeleton lines using `HandLandmarksConnections.HAND_CONNECTIONS` (positions are % of frame, converted to pixels)
+### Inference (`main.py`)
+1. OpenCV captures frame
+2. Frame flipped horizontally (mirror), converted BGR→RGB
+3. Wrapped in `mp.Image`, fed to `HandLandmarker.detect_for_video`
+4. Each detected hand is drawn + classified independently:
+   - `handedness[i].category_name == "Right"` → user's **left hand** → chord model
+   - `handedness[i].category_name == "Left"` → user's **right hand** → stroke model
+5. Predicted label drawn near each wrist
 
-Key constraint: MediaPipe Tasks API (`mp.tasks.vision`) differs from legacy `mp.solutions` API — uses `HandLandmarkerOptions`, not `Hands()`.
+**Handedness caveat:** frame is flipped before MediaPipe, so MediaPipe's Left/Right is inverted relative to the user.
+
+### Training pipeline
+
+```
+collect_imgs.py --hand {chord|stroke}   → data/{hand}/{class_idx}/frame_*.jpg
+make_dataset.py --hand {chord|stroke}   → dataset_{hand}.pickle
+train_model.py  --hand {chord|stroke}   → model_{hand}.pickle
+```
+
+### Data structure
+
+```
+data/
+  chord/    ← left hand, chord shape classes
+    0/
+    1/
+    ...
+  stroke/   ← right hand, stroke type classes
+    0/
+    1/
+    ...
+```
+
+### Label dicts (update in `main.py` as classes grow)
+
+```python
+chord_labels  = {0: "C", 1: "G", 2: "Am"}
+stroke_labels = {0: "Down", 1: "Up", 2: "Mute"}
+```
+
+## Key constraints
+
+- MediaPipe Tasks API (`mp.tasks.vision`) — uses `HandLandmarkerOptions`, not legacy `Hands()`
+- Each hand produces 42 features (21 landmarks × x,y) — models expect exactly 42
+- `make_dataset.py` uses `VisionRunningMode.IMAGE` (not VIDEO) for static frame processing
 
 ## Self-improvement
 
