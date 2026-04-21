@@ -1,1 +1,3 @@
 venv
+dataset.pickle
+model.pickle
