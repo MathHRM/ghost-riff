@@ -2,13 +2,20 @@ import cv2
 import os
 import time
 import glob
+import argparse
 
 ESC_KEY = 27
 COLLECT_DURATION = 5.0
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--hand", choices=["chord", "stroke"], required=True)
+args = parser.parse_args()
+
+BASE_DIR = f"data/{args.hand}"
+
 
 def next_class_index():
-    existing = glob.glob("data/*/")
+    existing = glob.glob(f"{BASE_DIR}/*/")
     if not existing:
         return 0
     indices = []
@@ -23,9 +30,8 @@ def next_class_index():
 
 def process_frame(frame, state, class_idx, frame_count, collect_start):
     if state == "IDLE":
-        cv2.putText(frame, f"IDLE  press Q to record  (class {class_idx})",
+        cv2.putText(frame, f"IDLE  press Q to record  ({args.hand} class {class_idx})",
                     (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (200, 200, 200), 2)
-
         return state, class_idx, frame_count, collect_start
 
     elapsed = time.time() - collect_start
@@ -34,7 +40,7 @@ def process_frame(frame, state, class_idx, frame_count, collect_start):
     if remaining <= 0:
         return "IDLE", class_idx + 1, 0, None
 
-    cv2.imwrite(f"data/{class_idx}/frame_{frame_count:04d}.jpg", frame)
+    cv2.imwrite(f"{BASE_DIR}/{class_idx}/frame_{frame_count:04d}.jpg", frame)
     frame_count += 1
     cv2.putText(frame, f"REC  {remaining:.1f}s  [{frame_count} frames]",
                 (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
@@ -49,7 +55,7 @@ class_idx = next_class_index()
 frame_count = 0
 collect_start = None
 
-os.makedirs("data", exist_ok=True)
+os.makedirs(BASE_DIR, exist_ok=True)
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -66,7 +72,7 @@ while cap.isOpened():
     if key == ord('q') and state == "IDLE":
         state = "COLLECTING"
         collect_start = time.time()
-        os.makedirs(f"data/{class_idx}", exist_ok=True)
+        os.makedirs(f"{BASE_DIR}/{class_idx}", exist_ok=True)
         frame_count = 0
 
     state, class_idx, frame_count, collect_start = process_frame(
