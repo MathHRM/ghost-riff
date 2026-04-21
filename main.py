@@ -23,8 +23,54 @@ model_chord = pickle.load(open("model_chord.pickle", "rb"))["model"]
 model_stroke = pickle.load(open("model_stroke.pickle", "rb"))["model"]
 
 # keys must match class indices used during data collection
-chord_labels = {0: "C", 1: "G", 2: "Am"}
-stroke_labels = {0: "Down", 1: "Up", 2: "Mute"}
+chord_labels = chord_labels = {
+    0: {
+        "name": "Idle", # mão relaxada semi-aberta (estado neutro)
+        "audio": None
+    },
+    1: {
+        "name": "C", # 1 dedo (indicador levantado)
+        "audio": "sounds/chords/C.wav"
+    },
+    2: {
+        "name": "G", # 2 dedos (indicador + médio)
+        "audio": "sounds/chords/G.wav"
+    },
+    3: {
+        "name": "D", # 3 dedos
+        "audio": "sounds/chords/D.wav"
+    },
+    4: {
+        "name": "A", # mão aberta
+        "audio": "sounds/chords/A.wav"
+    },
+    5: {
+        "name": "E", # punho fechado
+        "audio": "sounds/chords/E.wav"
+    },
+    6: {
+        "name": "Am", # joinha 👍
+        "audio": "sounds/chords/Am.wav"
+    },
+    7: {
+        "name": "Em", # rock 🤘
+        "audio": "sounds/chords/Em.wav"
+    },
+}
+stroke_labels = stroke_labels = {
+    0: {
+        "name": "Idle", # mão relaxada semi-aberta (estado neutro)
+    },
+    1: {
+        "name": "Down", # movimento rápido de cima para baixo
+    },
+    2: {
+        "name": "Up", # movimento rápido de baixo para cima
+    },
+    3: {
+        "name": "Mute", # mão parada ou bloqueando (baixa velocidade)
+    },
+}
 
 FINGER_COLORS = [
     (HandLandmarksConnections.HAND_PALM_CONNECTIONS,          (255, 255, 255)),  # white
