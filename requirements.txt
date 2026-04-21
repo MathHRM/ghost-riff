@@ -1,3 +1,5 @@
 mediapipe==0.10.33
 opencv-python==4.13.0.92
 scikit-learn==1.7.2
+pygame==2.6.1
+mutagen==1.47.0
