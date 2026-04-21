@@ -1,8 +1,13 @@
 import os
 import glob
 import pickle
+import argparse
 import cv2
 import mediapipe as mp
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--hand", choices=["chord", "stroke"], required=True)
+args = parser.parse_args()
 
 BaseOptions = mp.tasks.BaseOptions
 HandLandmarker = mp.tasks.vision.HandLandmarker
@@ -19,7 +24,7 @@ data = []
 labels = []
 
 with HandLandmarker.create_from_options(options) as landmarker:
-    for class_dir in glob.glob("data/*/"):
+    for class_dir in glob.glob(f"data/{args.hand}/*/"):
         label = int(os.path.basename(os.path.normpath(class_dir)))
         image_paths = sorted(glob.glob(os.path.join(class_dir, "*.jpg")))
 
@@ -35,9 +40,8 @@ with HandLandmarker.create_from_options(options) as landmarker:
             if not result.hand_landmarks:
                 continue
 
-            landmarks = result.hand_landmarks[0]
             coords = []
-            for lm in landmarks:
+            for lm in result.hand_landmarks[0]:
                 coords.append(lm.x)
                 coords.append(lm.y)
 
@@ -46,7 +50,8 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
         print(f"class {label}: {sum(1 for l in labels if l == label)} samples")
 
-with open("dataset.pickle", "wb") as f:
+output = f"dataset_{args.hand}.pickle"
+with open(output, "wb") as f:
     pickle.dump({"data": data, "labels": labels}, f)
 
-print(f"\ndataset.pickle written — {len(data)} total samples, {len(set(labels))} classes")
+print(f"\n{output} written — {len(data)} total samples, {len(set(labels))} classes")
