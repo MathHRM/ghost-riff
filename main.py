@@ -19,17 +19,20 @@ options = HandLandmarkerOptions(
 
 cap = cv2.VideoCapture(0)
 
-model_dict = pickle.load(open('./model.pickle', 'rb'))
-model = model_dict['model']
-labels_dict = {0: 'Joia', 1: 'Paz', 2: 'De boa'}
+model_chord = pickle.load(open("model_chord.pickle", "rb"))["model"]
+model_stroke = pickle.load(open("model_stroke.pickle", "rb"))["model"]
+
+# keys must match class indices used during data collection
+chord_labels = {0: "C", 1: "G", 2: "Am"}
+stroke_labels = {0: "Down", 1: "Up", 2: "Mute"}
 
 FINGER_COLORS = [
-    (HandLandmarksConnections.HAND_PALM_CONNECTIONS,         (255, 255, 255)),  # white
-    (HandLandmarksConnections.HAND_THUMB_CONNECTIONS,        (0, 128, 255)),    # orange
-    (HandLandmarksConnections.HAND_INDEX_FINGER_CONNECTIONS, (0, 255, 0)),      # green
-    (HandLandmarksConnections.HAND_MIDDLE_FINGER_CONNECTIONS,(255, 0, 0)),      # blue
-    (HandLandmarksConnections.HAND_RING_FINGER_CONNECTIONS,  (0, 0, 255)),      # red
-    (HandLandmarksConnections.HAND_PINKY_FINGER_CONNECTIONS, (255, 0, 255)),    # magenta
+    (HandLandmarksConnections.HAND_PALM_CONNECTIONS,          (255, 255, 255)),  # white
+    (HandLandmarksConnections.HAND_THUMB_CONNECTIONS,         (0, 128, 255)),    # orange
+    (HandLandmarksConnections.HAND_INDEX_FINGER_CONNECTIONS,  (0, 255, 0)),      # green
+    (HandLandmarksConnections.HAND_MIDDLE_FINGER_CONNECTIONS, (255, 0, 0)),      # blue
+    (HandLandmarksConnections.HAND_RING_FINGER_CONNECTIONS,   (0, 0, 255)),      # red
+    (HandLandmarksConnections.HAND_PINKY_FINGER_CONNECTIONS,  (255, 0, 255)),    # magenta
 ]
 
 def draw_connections(frame, hand_landmarks):
@@ -48,36 +51,36 @@ with HandLandmarker.create_from_options(options) as landmarker:
         if not ret:
             break
 
-        # converte para RGB
-        frame = cv2.flip(frame, 1) # flip horizontalmente para ficar como um espelho
+        # flip before MediaPipe so handedness labels are swapped:
+        # MediaPipe "Right" = user's left hand (chord)
+        # MediaPipe "Left"  = user's right hand (stroke)
+        frame = cv2.flip(frame, 1)
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-        # mediapipe image
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
 
         detected_hand_data = landmarker.detect_for_video(mp_image, int(cap.get(cv2.CAP_PROP_POS_MSEC)))
 
         if detected_hand_data.hand_landmarks:
             h, w, _ = frame.shape
-            for hand in detected_hand_data.hand_landmarks:
+            for i, hand in enumerate(detected_hand_data.hand_landmarks):
                 draw_connections(frame, hand)
 
-                coords = []
-                for landmark in hand:
-                    coords.append(landmark.x)
-                    coords.append(landmark.y)
+                coords = [v for lm in hand for v in (lm.x, lm.y)]
+                side = detected_hand_data.handedness[i][0].category_name
 
-                prediction = model.predict([np.asarray(coords)])
-                predicted_label = labels_dict[int(prediction[0])]
+                if side == "Right":
+                    label = chord_labels[int(model_chord.predict([coords])[0])]
+                else:
+                    label = stroke_labels[int(model_stroke.predict([coords])[0])]
 
                 wrist = hand[0]
                 cx, cy = int(wrist.x * w), int(wrist.y * h)
-                cv2.putText(frame, predicted_label, (cx, cy - 10),
+                cv2.putText(frame, label, (cx, cy - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
 
-        cv2.imshow("Hand Tracker (NEW API)", frame)
+        cv2.imshow("Ghost Riff", frame)
 
-        if cv2.waitKey(1) & 0xFF == ESC_KEY_ASCII_CODE: # waitKey returns 32 bit int, so we need to do a bitwise AND with 0xFF to get the last 8 bits which represent the ASCII code of the key pressed
+        if cv2.waitKey(1) & 0xFF == ESC_KEY_ASCII_CODE:
             break
 
 cap.release()
