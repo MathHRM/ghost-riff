@@ -17,14 +17,24 @@ options = HandLandmarkerOptions(
 
 cap = cv2.VideoCapture(0)
 
+FINGER_COLORS = [
+    (HandLandmarksConnections.HAND_PALM_CONNECTIONS,         (255, 255, 255)),  # white
+    (HandLandmarksConnections.HAND_THUMB_CONNECTIONS,        (0, 128, 255)),    # orange
+    (HandLandmarksConnections.HAND_INDEX_FINGER_CONNECTIONS, (0, 255, 0)),      # green
+    (HandLandmarksConnections.HAND_MIDDLE_FINGER_CONNECTIONS,(255, 0, 0)),      # blue
+    (HandLandmarksConnections.HAND_RING_FINGER_CONNECTIONS,  (0, 0, 255)),      # red
+    (HandLandmarksConnections.HAND_PINKY_FINGER_CONNECTIONS, (255, 0, 255)),    # magenta
+]
+
 def draw_connections(frame, hand_landmarks):
     height, width, _ = frame.shape
-    for conn in HandLandmarksConnections.HAND_CONNECTIONS:
-        start = hand_landmarks[conn.start]
-        end = hand_landmarks[conn.end]
-        sx, sy = int(start.x * width), int(start.y * height)
-        ex, ey = int(end.x * width), int(end.y * height)
-        cv2.line(frame, (sx, sy), (ex, ey), (0, 255, 0), 2)
+    for connections, color in FINGER_COLORS:
+        for conn in connections:
+            start = hand_landmarks[conn.start]
+            end = hand_landmarks[conn.end]
+            sx, sy = int(start.x * width), int(start.y * height)
+            ex, ey = int(end.x * width), int(end.y * height)
+            cv2.line(frame, (sx, sy), (ex, ey), color, 2)
 
 with HandLandmarker.create_from_options(options) as landmarker:
     while cap.isOpened():
