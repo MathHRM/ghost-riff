@@ -16,6 +16,12 @@ options = HandLandmarkerOptions(
 
 cap = cv2.VideoCapture(0)
 
+def draw_landmarks(frame, hand_landmarks):
+    for landmark in hand_landmarks:
+        height, width, _ = frame.shape # mediapipe positions come in %, so we need to convert to pixels
+        cx, cy = int(landmark.x * width), int(landmark.y * height)
+        cv2.circle(frame, (cx, cy), 5, (0, 255, 0), -1)
+
 with HandLandmarker.create_from_options(options) as landmarker:
     while cap.isOpened():
         ret, frame = cap.read()
@@ -33,10 +39,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
         if detected_hand_data.hand_landmarks:
             for hand in detected_hand_data.hand_landmarks:
-                for landmark in hand:
-                    height, width, _ = frame.shape # mediapipe positions come in %, so we need to convert to pixels
-                    cx, cy = int(landmark.x * width), int(landmark.y * height)
-                    cv2.circle(frame, (cx, cy), 5, (0, 255, 0), -1)
+                draw_landmarks(frame, hand)
 
         cv2.imshow("Hand Tracker (NEW API)", frame)
 
