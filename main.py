@@ -73,7 +73,8 @@ for _idx, _info in chord_labels.items():
     except Exception:
         pass
 
-last_chord_name = None
+current_chord_name = None
+last_stroke_name = None
 last_play_time = None
 
 stroke_labels = stroke_labels = {
@@ -100,19 +101,29 @@ FINGER_COLORS = [
     (HandLandmarksConnections.HAND_PINKY_FINGER_CONNECTIONS,  (255, 0, 255)),    # magenta
 ]
 
-def try_play_chord(chord_name):
-    global last_chord_name, last_play_time
-    if chord_name not in chord_sounds:
+def handle_stroke(stroke_name):
+    global last_stroke_name, last_play_time
+
+    if stroke_name == last_stroke_name:
         return
-    if chord_name == last_chord_name:
-        if last_play_time is not None:
-            elapsed = time.monotonic() - last_play_time
-            if elapsed < chord_sounds[chord_name]["duration"] * 0.5:
-                return
+
+    last_stroke_name = stroke_name
+
+    if stroke_name == "Mute":
+        pygame.mixer.music.stop()
+        return
+
+    if stroke_name == "Idle" or current_chord_name not in chord_sounds:
+        return
+
+    if last_play_time is not None:
+        elapsed = time.monotonic() - last_play_time
+        if elapsed < chord_sounds[current_chord_name]["duration"] * 0.5:
+            return
+
     try:
-        pygame.mixer.music.load(chord_sounds[chord_name]["path"])
+        pygame.mixer.music.load(chord_sounds[current_chord_name]["path"])
         pygame.mixer.music.play()
-        last_chord_name = chord_name
         last_play_time = time.monotonic()
     except Exception:
         pass
@@ -159,7 +170,9 @@ with HandLandmarker.create_from_options(options) as landmarker:
                 label = label_prediction_by_side(side, model_stroke, coords)
 
                 if side == "Right":
-                    try_play_chord(label["name"])
+                    current_chord_name = label["name"]
+                else:
+                    handle_stroke(label["name"])
 
                 wrist = hand[0]
                 cx, cy = int(wrist.x * w), int(wrist.y * h)
