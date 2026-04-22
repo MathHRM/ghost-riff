@@ -23,7 +23,7 @@ def mix_with_strum(segments: list, delay_ms: int = 0) -> AudioSegment:
     return output - (len(segments) * 2)
 
 
-def process(json_path: Path, strum_delay: int = 0) -> None:
+def process(json_path: Path, out_dir: Path, strum_delay: int = 0) -> None:
     try:
         data = json.loads(json_path.read_text())
     except json.JSONDecodeError as e:
@@ -47,7 +47,7 @@ def process(json_path: Path, strum_delay: int = 0) -> None:
         return
 
     mixed = mix_with_strum(segments, delay_ms=strum_delay)
-    out = json_path.with_suffix(".wav")
+    out = out_dir / json_path.with_suffix(".wav").name
     mixed.export(str(out), format="wav")
     print(f"  -> {out.name} ({len(segments)} notes, {len(mixed)}ms)")
 
@@ -56,7 +56,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Decode base64 MP3s from JSON files and mix into chord WAVs."
     )
-    parser.add_argument("folder", help="Folder containing .json files")
+    parser.add_argument("--folder", default="sounds/base64-chords",
+                        help="Folder containing .json files (default: sounds/base64-chords)")
+    parser.add_argument("--output", default="sounds/chords",
+                        help="Output folder for WAV files (default: sounds/chords)")
     parser.add_argument("--strum", type=int, default=27,
                         help="Delay between notes in ms (0=dry chord, 20-40=strum)")
     args = parser.parse_args()
@@ -73,6 +76,9 @@ def main() -> None:
         )
         sys.exit(1)
 
+    out_dir = Path(args.output)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     json_files = sorted(folder.glob("*.json"))
     if not json_files:
         print(f"No .json files found in '{folder}'.")
@@ -80,7 +86,7 @@ def main() -> None:
 
     for json_path in json_files:
         print(f"Processing {json_path.name}...")
-        process(json_path, strum_delay=args.strum)
+        process(json_path, out_dir, strum_delay=args.strum)
 
 
 if __name__ == "__main__":
