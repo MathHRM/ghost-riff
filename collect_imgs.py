@@ -5,10 +5,11 @@ import glob
 import argparse
 
 ESC_KEY = 27
-COLLECT_DURATION = 10.0
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--hand", choices=["chord", "stroke"], required=True)
+parser.add_argument("--duration", type=float, default=5.0)
+parser.add_argument("--class", type=int, dest="class_idx")
 args = parser.parse_args()
 
 BASE_DIR = f"data/{args.hand}"
@@ -35,7 +36,7 @@ def process_frame(frame, state, class_idx, frame_count, collect_start):
         return state, class_idx, frame_count, collect_start
 
     elapsed = time.time() - collect_start
-    remaining = COLLECT_DURATION - elapsed
+    remaining = args.duration - elapsed
 
     if remaining <= 0:
         return "IDLE", class_idx + 1, 0, None
@@ -51,7 +52,7 @@ def process_frame(frame, state, class_idx, frame_count, collect_start):
 cap = cv2.VideoCapture(0)
 
 state = "IDLE"
-class_idx = next_class_index()
+class_idx = args.class_idx if args.class_idx is not None else next_class_index()
 frame_count = 0
 collect_start = None
 
