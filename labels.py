@@ -10,7 +10,7 @@ chord_labels = {
     },
     2: {
         "name": "G", # ✌️ 2 dedos (indicador + médio)
-        "audio": "sounds/chords/G.mp3"
+        "audio": "sounds/chords/G.wav"
     },
     3: {
         "name": "D", # 🤟 3 dedos
@@ -22,7 +22,7 @@ chord_labels = {
     },
     5: {
         "name": "E", # ✊ punho fechado
-        "audio": "sounds/chords/E.mp3"
+        "audio": "sounds/chords/E.wav"
     },
     6: {
         "name": "Am", # 👍 joinha
