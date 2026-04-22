@@ -6,7 +6,7 @@ import cv2
 import mediapipe as mp
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--hand", choices=["chord", "stroke"], required=True)
+parser.add_argument("--hand", choices=["chord", "stroke", "both"], required=True)
 args = parser.parse_args()
 
 BaseOptions = mp.tasks.BaseOptions
@@ -20,11 +20,11 @@ options = HandLandmarkerOptions(
     num_hands=1
 )
 
-data = []
-labels = []
 
-with HandLandmarker.create_from_options(options) as landmarker:
-    for class_dir in glob.glob(f"data/{args.hand}/*/"):
+def build_dataset(hand, landmarker):
+    data = []
+    labels = []
+    for class_dir in glob.glob(f"data/{hand}/*/"):
         label = int(os.path.basename(os.path.normpath(class_dir)))
         image_paths = sorted(glob.glob(os.path.join(class_dir, "*.jpg")))
 
@@ -49,9 +49,15 @@ with HandLandmarker.create_from_options(options) as landmarker:
             labels.append(label)
 
         print(f"class {label}: {sum(1 for l in labels if l == label)} samples")
+    return data, labels
 
-output = f"dataset_{args.hand}.pickle"
-with open(output, "wb") as f:
-    pickle.dump({"data": data, "labels": labels}, f)
 
-print(f"\n{output} written — {len(data)} total samples, {len(set(labels))} classes")
+hands = ["chord", "stroke"] if args.hand == "both" else [args.hand]
+
+with HandLandmarker.create_from_options(options) as landmarker:
+    for hand in hands:
+        data, labels = build_dataset(hand, landmarker)
+        output = f"dataset_{hand}.pickle"
+        with open(output, "wb") as f:
+            pickle.dump({"data": data, "labels": labels}, f)
+        print(f"\n{output} written — {len(data)} total samples, {len(set(labels))} classes")
