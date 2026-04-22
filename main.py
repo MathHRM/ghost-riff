@@ -1,10 +1,10 @@
 import cv2
 import mediapipe as mp
 import pickle
-import numpy as np
 import time
 import pygame
 from mutagen.mp3 import MP3
+from labels import chord_labels, stroke_labels
 
 ESC_KEY_ASCII_CODE = 27
 
@@ -21,48 +21,12 @@ options = HandLandmarkerOptions(
 )
 
 cap = cv2.VideoCapture(0)
-
 model_chord = pickle.load(open("model_chord.pickle", "rb"))["model"]
 model_stroke = pickle.load(open("model_stroke.pickle", "rb"))["model"]
 
 pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
 pygame.mixer.init()
 
-# keys must match class indices used during data collection
-chord_labels = chord_labels = {
-    0: {
-        "name": "Idle", # 🫳 mão relaxada semi-aberta (estado neutro)
-        "audio": None
-    },
-    1: {
-        "name": "C", # ☝️ 1 dedo (indicador levantado)
-        "audio": "sounds/chords/C.mp3"
-    },
-    2: {
-        "name": "G", # ✌️ 2 dedos (indicador + médio)
-        "audio": "sounds/chords/G.mp3"
-    },
-    3: {
-        "name": "D", # 🤟 3 dedos
-        "audio": "sounds/chords/D.mp3"
-    },
-    4: {
-        "name": "A", # 🖐️ mão aberta
-        "audio": "sounds/chords/A.mp3"
-    },
-    5: {
-        "name": "E", # ✊ punho fechado
-        "audio": "sounds/chords/E.mp3"
-    },
-    6: {
-        "name": "Am", # 👍 joinha
-        "audio": "sounds/chords/Am.mp3"
-    },
-    7: {
-        "name": "Em", # 🤘 rock
-        "audio": "sounds/chords/Em.mp3"
-    },
-}
 chord_sounds = {}
 for _idx, _info in chord_labels.items():
     _path = _info.get("audio")
@@ -76,21 +40,6 @@ for _idx, _info in chord_labels.items():
 current_chord_name = None
 last_stroke_name = None
 last_play_time = None
-
-stroke_labels = stroke_labels = {
-    0: {
-        "name": "Idle", # 🫳 mão relaxada semi-aberta (estado neutro)
-    },
-    1: {
-        "name": "Down", # ☝️ movimento rápido de cima para baixo
-    },
-    2: {
-        "name": "Up", # 👇 movimento rápido de baixo para cima
-    },
-    3: {
-        "name": "Mute", # 🖐️ mão parada ou bloqueando (baixa velocidade)
-    },
-}
 
 FINGER_COLORS = [
     (HandLandmarksConnections.HAND_PALM_CONNECTIONS,          (255, 255, 255)),  # white
