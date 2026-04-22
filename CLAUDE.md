@@ -18,6 +18,7 @@ Requires webcam, `hand_landmarker.task`, `model_chord.pickle`, `model_stroke.pic
 - **scikit-learn** — RandomForestClassifier for gesture classification
 - **pygame** — chord audio playback
 - **mutagen** — reads MP3 duration to control playback length
+- **pydub** — mix/overlay audio segments; requires `ffmpeg` on PATH for MP3 decoding
 
 ## Architecture
 
@@ -29,6 +30,7 @@ Two independent classifiers: one per hand. `main.py` is inference entry point.
 collect_imgs.py --hand {chord|stroke} [--class N] [--duration S]
 make_dataset.py --hand {chord|stroke|both}
 train_model.py  --hand {chord|stroke|both}
+mix_chords.py   <folder>   ← decode base64 MP3 JSONs → mixed chord WAVs
 ```
 
 Outputs: `data/{hand}/{class_idx}/frame_*.jpg` → `dataset_{hand}.pickle` → `model_{hand}.pickle`

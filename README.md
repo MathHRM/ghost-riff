@@ -21,7 +21,15 @@ Download the MediaPipe hand landmark model and place it in the project root:
 wget -q https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
 ```
 
-Add chord audio files to `sounds/chords/`. Each file must be an MP3 named after its chord label (e.g. `C.mp3`, `G.mp3`).
+Generate chord WAV files from the included base64 JSON sources:
+
+```bash
+python mix_chords.py
+```
+
+This decodes `sounds/base64-chords/*.json` → mixed WAVs in `sounds/chords/`. Requires `ffmpeg` on PATH.
+
+Optional flags: `--folder`, `--output`, `--strum` (note delay in ms, default 27).
 
 ## Train your own models
 
@@ -55,6 +63,7 @@ main.py                  — inference + audio playback
 collect_imgs.py          — webcam-based image collection
 make_dataset.py          — landmark extraction → pickle dataset
 train_model.py           — classifier training
+mix_chords.py            — decode base64 JSON → mixed chord WAVs
 labels.py                — chord/stroke label definitions
 hand_landmarker.task     — MediaPipe pre-trained landmark model (not in repo)
 model_chord.pickle       — trained chord classifier (generated)
@@ -63,5 +72,6 @@ data/
   chord/                 — collected images, left hand
   stroke/                — collected images, right hand
 sounds/
-  chords/                — MP3 files, one per chord label
+  base64-chords/         — source JSON files (base64-encoded MP3 notes per chord)
+  chords/                — generated WAV files (output of mix_chords.py)
 ```
