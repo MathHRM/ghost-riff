@@ -114,6 +114,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
             for i, hand in enumerate(detected_hand_data.hand_landmarks):
                 score = detected_hand_data.handedness[i][0].score
                 if score < MIN_DETECTION_CONFIDENCE:
+                    print(f"Low-confidence detection for hand {i}: {score:.2f}%")
                     continue  # ignore low-confidence detections
 
                 draw_connections(frame, hand)
