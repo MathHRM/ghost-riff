@@ -3,7 +3,6 @@ import mediapipe as mp
 import pickle
 import time
 import pygame
-from mutagen.mp3 import MP3
 from labels import chord_labels, stroke_labels
 
 ESC_KEY_ASCII_CODE = 27
@@ -33,7 +32,8 @@ for _idx, _info in chord_labels.items():
     if _path is None:
         continue
     try:
-        chord_sounds[_info["name"]] = {"path": _path, "duration": MP3(_path).info.length}
+        snd = pygame.mixer.Sound(_path)
+        chord_sounds[_info["name"]] = {"path": _path, "duration": snd.get_length()}
     except Exception:
         pass
 
