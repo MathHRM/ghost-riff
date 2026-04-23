@@ -6,6 +6,7 @@ import pygame
 from labels import chord_labels, stroke_labels
 
 ESC_KEY_ASCII_CODE = 27
+MIN_DETECTION_CONFIDENCE = 0.6
 
 BaseOptions = mp.tasks.BaseOptions
 HandLandmarker = mp.tasks.vision.HandLandmarker
@@ -111,6 +112,10 @@ with HandLandmarker.create_from_options(options) as landmarker:
         if detected_hand_data.hand_landmarks:
             h, w, _ = frame.shape
             for i, hand in enumerate(detected_hand_data.hand_landmarks):
+                score = detected_hand_data.handedness[i][0].score
+                if score < MIN_DETECTION_CONFIDENCE:
+                    continue  # ignore low-confidence detections
+
                 draw_connections(frame, hand)
 
                 coords = [v for lm in hand for v in (lm.x, lm.y)]
