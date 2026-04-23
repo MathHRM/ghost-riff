@@ -6,7 +6,7 @@ chord_labels = {
     },
     1: {
         "name": "C", # ☝️ 1 dedo (indicador levantado)
-        "audio": "sounds/chords/C.mp3"
+        "audio": "sounds/chords/C.wav"
     },
     2: {
         "name": "G", # ✌️ 2 dedos (indicador + médio)
@@ -14,11 +14,11 @@ chord_labels = {
     },
     3: {
         "name": "D", # 🤟 3 dedos
-        "audio": "sounds/chords/D.mp3"
+        "audio": "sounds/chords/D.wav"
     },
     4: {
         "name": "A", # 🖐️ mão aberta
-        "audio": "sounds/chords/A.mp3"
+        "audio": "sounds/chords/A.wav"
     },
     5: {
         "name": "E", # ✊ punho fechado
@@ -26,11 +26,11 @@ chord_labels = {
     },
     6: {
         "name": "Am", # 👍 joinha
-        "audio": "sounds/chords/Am.mp3"
+        "audio": "sounds/chords/Am.wav"
     },
     7: {
         "name": "Em", # 🤘 rock
-        "audio": "sounds/chords/Em.mp3"
+        "audio": "sounds/chords/Em.wav"
     },
 }
 
